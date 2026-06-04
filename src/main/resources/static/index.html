@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>试卷管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; background: #f0f2f5; color: #333; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+        /* 顶部标题 */
+        .header { text-align: center; padding: 30px 0 20px; }
+        .header h1 { font-size: 28px; color: #1a1a2e; }
+        .header p { color: #666; margin-top: 8px; }
+
+        /* 操作栏 */
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .toolbar .left { display: flex; gap: 10px; align-items: center; }
+        .search-box { padding: 8px 14px; border: 1px solid #d9d9d9; border-radius: 6px; width: 260px; font-size: 14px; outline: none; transition: border-color 0.3s; }
+        .search-box:focus { border-color: #4361ee; }
+
+        /* 按钮 */
+        .btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #4361ee; color: #fff; }
+        .btn-primary:hover { background: #3a56d4; }
+        .btn-danger { background: #e63946; color: #fff; }
+        .btn-danger:hover { background: #c5303c; }
+        .btn-success { background: #2ec4b6; color: #fff; }
+        .btn-success:hover { background: #26a69a; }
+        .btn-sm { padding: 4px 12px; font-size: 13px; }
+
+        /* 表格 */
+        .table-wrap { background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #4361ee; color: #fff; padding: 14px 16px; text-align: left; font-weight: 500; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
+        tr:hover td { background: #f8f9ff; }
+        tr:last-child td { border-bottom: none; }
+        .actions { display: flex; gap: 6px; }
+
+        /* 弹窗 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: #fff; border-radius: 12px; padding: 30px; width: 440px; max-width: 90vw; box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+        .modal h2 { margin-bottom: 20px; font-size: 20px; color: #1a1a2e; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 14px; color: #555; }
+        .form-group input { width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; transition: border-color 0.3s; }
+        .form-group input:focus { border-color: #4361ee; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+        /* 空状态 */
+        .empty { text-align: center; padding: 60px; color: #999; }
+        .empty p { font-size: 16px; }
+
+        /* 统计卡片 */
+        .stats { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+        .stat-card { flex: 1; min-width: 160px; background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .stat-card .label { font-size: 13px; color: #999; margin-bottom: 4px; }
+        .stat-card .value { font-size: 26px; font-weight: bold; color: #4361ee; }
+
+        /* 消息提示 */
+        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; color: #fff; font-size: 14px; z-index: 200; animation: slideIn 0.3s; }
+        .toast-success { background: #2ec4b6; }
+        .toast-error { background: #e63946; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 试卷管理系统</h1>
+            <p>管理试卷信息，查询、添加、删除试卷</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="label">试卷总数</div>
+                <div class="value" id="totalCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">平均参加人数</div>
+                <div class="value" id="avgPerson">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">平均分均值</div>
+                <div class="value" id="avgScore">0</div>
+            </div>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="left">
+                <input type="text" class="search-box" id="searchInput" placeholder="按试卷ID或名称搜索...">
+                <button class="btn btn-primary" onclick="searchPaper()">搜索</button>
+            </div>
+            <button class="btn btn-success" onclick="openAddModal()">+ 添加试卷</button>
+        </div>
+
+        <!-- 表格 -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>试卷ID</th>
+                        <th>试卷名称</th>
+                        <th>创建日期</th>
+                        <th>考试人数</th>
+                        <th>总分</th>
+                        <th>平均分</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="paperTable">
+                </tbody>
+            </table>
+            <div class="empty" id="emptyState" style="display:none;">
+                <p>📋 暂无试卷数据，点击"添加试卷"开始</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加试卷弹窗 -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <h2>添加试卷</h2>
+            <div class="form-group">
+                <label>试卷ID</label>
+                <input type="number" id="formPaperid" placeholder="请输入试卷ID">
+            </div>
+            <div class="form-group">
+                <label>试卷名称</label>
+                <input type="text" id="formPapertitle" placeholder="请输入试卷名称">
+            </div>
+            <div class="form-group">
+                <label>创建日期</label>
+                <input type="date" id="formPaperdate">
+            </div>
+            <div class="form-group">
+                <label>考试人数</label>
+                <input type="number" id="formPerson" placeholder="请输入考试人数" value="0">
+            </div>
+            <div class="form-group">
+                <label>总分</label>
+                <input type="number" step="0.01" id="formTotal" placeholder="请输入总分" value="0">
+            </div>
+            <div class="form-group">
+                <label>平均分</label>
+                <input type="number" step="0.01" id="formAvg" placeholder="请输入平均分" value="0">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeModal('addModal')">取消</button>
+                <button class="btn btn-primary" onclick="submitAdd()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal">
+            <h2>试卷详情</h2>
+            <div id="detailContent"></div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeModal('detailModal')">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/paper';
+
+        // 页面加载时获取数据
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPapers();
+            // 回车搜索
+            document.getElementById('searchInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter') searchPaper();
+            });
+        });
+
+        // 加载所有试卷
+        async function loadPapers() {
+            try {
+                const res = await fetch(`${API_BASE}/list`);
+                const data = await res.json();
+                if (data.code === 200) {
+                    renderTable(data.data);
+                    updateStats(data.data);
+                }
+            } catch (e) {
+                showToast('加载失败，请检查后端服务', 'error');
+            }
+        }
+
+        // 渲染表格
+        function renderTable(list) {
+            const tbody = document.getElementById('paperTable');
+            const empty = document.getElementById('emptyState');
+            if (!list || list.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            tbody.innerHTML = list.map(p => `
+                <tr>
+                    <td>${p.paperid}</td>
+                    <td>${p.papertitle}</td>
+                    <td>${p.paperdate || '-'}</td>
+                    <td>${p.person}</td>
+                    <td>${p.total}</td>
+                    <td>${p.avg}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-primary btn-sm" onclick="viewDetail(${p.paperid})">详情</button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePaper(${p.paperid})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 更新统计
+        function updateStats(list) {
+            document.getElementById('totalCount').textContent = list.length;
+            if (list.length > 0) {
+                const avgPerson = (list.reduce((s, p) => s + p.person, 0) / list.length).toFixed(1);
+                const avgScore = (list.reduce((s, p) => s + p.avg, 0) / list.length).toFixed(1);
+                document.getElementById('avgPerson').textContent = avgPerson;
+                document.getElementById('avgScore').textContent = avgScore;
+            } else {
+                document.getElementById('avgPerson').textContent = '0';
+                document.getElementById('avgScore').textContent = '0';
+            }
+        }
+
+        // 搜索试卷
+        async function searchPaper() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (!keyword) {
+                loadPapers();
+                return;
+            }
+            // 先尝试按ID查询
+            if (/^\d+$/.test(keyword)) {
+                try {
+                    const res = await fetch(`${API_BASE}/${keyword}`);
+                    const data = await res.json();
+                    if (data.code === 200 && data.data) {
+                        renderTable([data.data]);
+                        updateStats([data.data]);
+                        return;
+                    }
+                } catch (e) {}
+            }
+            // 按名称查询
+            try {
+                const res = await fetch(`${API_BASE}/title/${encodeURIComponent(keyword)}`);
+                const data = await res.json();
+                if (data.code === 200 && data.data) {
+                    renderTable([data.data]);
+                    updateStats([data.data]);
+                } else {
+                    renderTable([]);
+                    updateStats([]);
+                }
+            } catch (e) {
+                showToast('搜索失败', 'error');
+            }
+        }
+
+        // 查看详情
+        async function viewDetail(paperid) {
+            try {
+                const res = await fetch(`${API_BASE}/${paperid}`);
+                const data = await res.json();
+                if (data.code === 200 && data.data) {
+                    const p = data.data;
+                    document.getElementById('detailContent').innerHTML = `
+                        <div style="line-height:2;">
+                            <p><strong>试卷ID：</strong>${p.paperid}</p>
+                            <p><strong>试卷名称：</strong>${p.papertitle}</p>
+                            <p><strong>创建日期：</strong>${p.paperdate || '-'}</p>
+                            <p><strong>考试人数：</strong>${p.person}</p>
+                            <p><strong>总分：</strong>${p.total}</p>
+                            <p><strong>平均分：</strong>${p.avg}</p>
+                        </div>
+                    `;
+                    openModal('detailModal');
+                } else {
+                    showToast('试卷不存在', 'error');
+                }
+            } catch (e) {
+                showToast('查询失败', 'error');
+            }
+        }
+
+        // 打开添加弹窗
+        function openAddModal() {
+            document.getElementById('formPaperid').value = '';
+            document.getElementById('formPapertitle').value = '';
+            document.getElementById('formPaperdate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('formPerson').value = '0';
+            document.getElementById('formTotal').value = '0';
+            document.getElementById('formAvg').value = '0';
+            openModal('addModal');
+        }
+
+        // 提交添加
+        async function submitAdd() {
+            const paperid = document.getElementById('formPaperid').value;
+            const papertitle = document.getElementById('formPapertitle').value.trim();
+            const paperdate = document.getElementById('formPaperdate').value;
+            const person = document.getElementById('formPerson').value;
+            const total = document.getElementById('formTotal').value;
+            const avg = document.getElementById('formAvg').value;
+
+            if (!paperid || !papertitle) {
+                showToast('试卷ID和名称不能为空', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paperid: parseInt(paperid),
+                        papertitle: papertitle,
+                        paperdate: paperdate,
+                        person: parseInt(person),
+                        total: parseFloat(total),
+                        avg: parseFloat(avg)
+                    })
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('添加成功', 'success');
+                    closeModal('addModal');
+                    loadPapers();
+                } else {
+                    showToast(data.msg || '添加失败', 'error');
+                }
+            } catch (e) {
+                showToast('添加失败，请检查网络', 'error');
+            }
+        }
+
+        // 删除试卷
+        async function deletePaper(paperid) {
+            if (!confirm(`确定要删除试卷ID=${paperid}吗？`)) return;
+            try {
+                const res = await fetch(`${API_BASE}/${paperid}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('删除成功', 'success');
+                    loadPapers();
+                } else {
+                    showToast(data.msg || '删除失败', 'error');
+                }
+            } catch (e) {
+                showToast('删除失败', 'error');
+            }
+        }
+
+        // 弹窗控制
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // 点击遮罩关闭弹窗
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.addEventListener('click', e => {
+                if (e.target === el) el.classList.remove('active');
+            });
+        });
+
+        // 消息提示
+        function showToast(msg, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+    </script>
+</body>
+</html>
