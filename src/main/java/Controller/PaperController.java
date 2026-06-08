@@ -16,7 +16,7 @@ public class PaperController {
     @Autowired
     private PapaerService paperService;
 
-    //统一返回格式
+
     private Map<String, Object> result(int code, String msg, Object data) {
         Map<String, Object> map = new HashMap<>();
         map.put("code", code);
