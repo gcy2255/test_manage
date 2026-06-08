@@ -13,4 +13,5 @@ public class paper {
     private int person;
     private double avg;
     private double total;
+    private int count; //题目数量
 }

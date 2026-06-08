@@ -6,36 +6,45 @@
     <title>试卷管理系统</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Microsoft YaHei', Arial, sans-serif; background: #f0f2f5; color: #333; }
+        body { font-family: '宋体', Arial, sans-serif; background: #f0f2f5; color: #333; }
         .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
-
         /* 顶部标题 */
-        .header { text-align: center; padding: 30px 0 20px; }
-        .header h1 { font-size: 28px; color: #1a1a2e; }
+        .header { text-align: center; padding: 30px 0 10px; }
+        .header h1 { font-size: 28px; color: #4a6c8c; }
         .header p { color: #666; margin-top: 8px; }
+
+        /* Tab 导航 */
+        .tab-nav { display: flex; justify-content: center; gap: 0; margin: 20px 0; background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
+        .tab-btn { flex: 1; padding: 14px 20px; border: none; background: transparent; font-size: 15px; cursor: pointer; color: #666; transition: all 0.2s; position: relative; }
+        .tab-btn:hover { background: #f0f5fa; color: #4a6c8c; }
+        .tab-btn.active { color: antiquewhite; font-weight: 600; background:#4a6c8c }
+        .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 20%; width: 60%; height: 3px; background-color: aquamarine; border-radius: 3px 3px 0 0; }
+        /* 板块容器 */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
 
         /* 操作栏 */
         .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .toolbar .left { display: flex; gap: 10px; align-items: center; }
         .search-box { padding: 8px 14px; border: 1px solid #d9d9d9; border-radius: 6px; width: 260px; font-size: 14px; outline: none; transition: border-color 0.3s; }
-        .search-box:focus { border-color: #4361ee; }
+        .search-box:focus { border-color: #4a6c8c; }
 
         /* 按钮 */
         .btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-        .btn-primary { background: #4361ee; color: #fff; }
-        .btn-primary:hover { background: #3a56d4; }
+        .btn-primary { background: #4a6c8c; color: #fff; }
+        .btn-primary:hover { background: #3d5a75; }
         .btn-danger { background: #e63946; color: #fff; }
         .btn-danger:hover { background: #c5303c; }
-        .btn-success { background: #2ec4b6; color: #fff; }
-        .btn-success:hover { background: #26a69a; }
+        .btn-success { background: #40c9a2; color: #fff; }
+        .btn-success:hover { background: #35b590; }
         .btn-sm { padding: 4px 12px; font-size: 13px; }
 
         /* 表格 */
         .table-wrap { background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #4361ee; color: #fff; padding: 14px 16px; text-align: left; font-weight: 500; }
+        th { background: #4a6c8c; color: #fff; padding: 14px 16px; text-align: left; font-weight: 500; }
         td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
-        tr:hover td { background: #f8f9ff; }
+        tr:hover td { background: #f0f5fa; }
         tr:last-child td { border-bottom: none; }
         .actions { display: flex; gap: 6px; }
 
@@ -43,11 +52,11 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; justify-content: center; align-items: center; }
         .modal-overlay.active { display: flex; }
         .modal { background: #fff; border-radius: 12px; padding: 30px; width: 440px; max-width: 90vw; box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
-        .modal h2 { margin-bottom: 20px; font-size: 20px; color: #1a1a2e; }
+        .modal h2 { margin-bottom: 20px; font-size: 20px; color: #4a6c8c; }
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 14px; color: #555; }
-        .form-group input { width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; transition: border-color 0.3s; }
-        .form-group input:focus { border-color: #4361ee; }
+        .form-group input, .form-group select { width: 100%; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus { border-color: #4a6c8c; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 
         /* 空状态 */
@@ -56,68 +65,134 @@
 
         /* 统计卡片 */
         .stats { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
-        .stat-card { flex: 1; min-width: 160px; background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-        .stat-card .label { font-size: 13px; color: #999; margin-bottom: 4px; }
-        .stat-card .value { font-size: 26px; font-weight: bold; color: #4361ee; }
+        .stat-card { flex: 1; min-width: 160px; background: linear-gradient(135deg, #f0f5fa 0%, #e8f0f8 100%); border-radius: 10px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-left: 4px solid #4a6c8c; }
+        .stat-card .label { font-size: 13px; color: #666; margin-bottom: 4px; }
+        .stat-card .value { font-size: 26px; font-weight: bold; color: #4a6c8c; }
 
         /* 消息提示 */
         .toast { position: fixed; top: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; color: #fff; font-size: 14px; z-index: 200; animation: slideIn 0.3s; }
-        .toast-success { background: #2ec4b6; }
+        .toast-success { background: #40c9a2; }
         .toast-error { background: #e63946; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* 录入分数选择区 */
+        .score-select { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .score-select label { font-size: 14px; color: #555; }
+        .score-select select { padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; outline: none; min-width: 180px; }
+        .score-select select:focus { border-color: #4a6c8c; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📄 试卷管理系统</h1>
-            <p>管理试卷信息，查询、添加、删除试卷</p>
+            <h1> 试卷管理系统</h1>
         </div>
 
-        <!-- 统计卡片 -->
-        <div class="stats">
-            <div class="stat-card">
-                <div class="label">试卷总数</div>
-                <div class="value" id="totalCount">0</div>
+        <!-- Tab 导航 -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('paper')">试卷管理</button>
+            <button class="tab-btn" onclick="switchTab('student')"> 学生管理</button>
+            <button class="tab-btn" onclick="switchTab('score')"> 录入分数</button>
+        </div>
+
+        <!-- ========== 试卷管理 ========== -->
+        <div class="tab-panel active" id="panel-paper">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="label">试卷总数</div>
+                    <div class="value" id="totalCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">平均参加人数</div>
+                    <div class="value" id="avgPerson">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">平均分均值</div>
+                    <div class="value" id="avgScore">0</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="label">平均参加人数</div>
-                <div class="value" id="avgPerson">0</div>
+            <div class="toolbar">
+                <div class="left">
+                    <input type="text" class="search-box" id="searchInput" placeholder="按试卷ID或名称搜索...">
+                    <button class="btn btn-primary" onclick="searchPaper()">搜索</button>
+                </div>
+                <button class="btn btn-success" onclick="openAddModal()">+ 添加试卷</button>
             </div>
-            <div class="stat-card">
-                <div class="label">平均分均值</div>
-                <div class="value" id="avgScore">0</div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>试卷ID</th>
+                            <th>试卷名称</th>
+                            <th>创建日期</th>
+                            <th>考试人数</th>
+                            <th>总分</th>
+                            <th>平均分</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paperTable"></tbody>
+                </table>
+                <div class="empty" id="emptyState" style="display:none;">
+                    <p>暂无试卷数据，点击"添加试卷"开始</p>
+                </div>
             </div>
         </div>
 
-        <!-- 工具栏 -->
-        <div class="toolbar">
-            <div class="left">
-                <input type="text" class="search-box" id="searchInput" placeholder="按试卷ID或名称搜索...">
-                <button class="btn btn-primary" onclick="searchPaper()">搜索</button>
+        <!-- ========== 学生管理 ========== -->
+        <div class="tab-panel" id="panel-student">
+            <div class="toolbar">
+                <div class="left">
+                    <input type="text" class="search-box" id="studentSearchInput" placeholder="按学生ID或姓名搜索...">
+                    <button class="btn btn-primary" onclick="searchStudent()">搜索</button>
+                </div>
+                <button class="btn btn-success" onclick="openAddStudentModal()">+ 添加学生</button>
             </div>
-            <button class="btn btn-success" onclick="openAddModal()">+ 添加试卷</button>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>学生ID</th>
+                            <th>姓名</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTable"></tbody>
+                </table>
+                <div class="empty" id="studentEmptyState" style="display:none;">
+                    <p>📋 暂无学生数据，点击"添加学生"开始</p>
+                </div>
+            </div>
         </div>
 
-        <!-- 表格 -->
-        <div class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>试卷ID</th>
-                        <th>试卷名称</th>
-                        <th>创建日期</th>
-                        <th>考试人数</th>
-                        <th>总分</th>
-                        <th>平均分</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="paperTable">
-                </tbody>
-            </table>
-            <div class="empty" id="emptyState" style="display:none;">
-                <p>📋 暂无试卷数据，点击"添加试卷"开始</p>
+        <!-- ========== 录入分数 ========== -->
+        <div class="tab-panel" id="panel-score">
+            <div class="score-select">
+                <label>选择试卷：</label>
+                <select id="scorePaperSelect" onchange="onScoreSelectChange()">
+                    <option value="">-- 请选择试卷 --</option>
+                </select>
+                <label>选择学生：</label>
+                <select id="scoreStudentSelect" onchange="onScoreSelectChange()">
+                    <option value="">-- 请选择学生 --</option>
+                </select>
+                <button class="btn btn-success" onclick="openAddScoreModal()">+ 添加题目分数</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>题目ID</th>
+                            <th>题型</th>
+                            <th>分数</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scoreTable"></tbody>
+                </table>
+                <div class="empty" id="scoreEmptyState">
+                    <p> 请先选择试卷和学生</p>
+                </div>
             </div>
         </div>
     </div>
@@ -157,7 +232,7 @@
         </div>
     </div>
 
-    <!-- 详情弹窗 -->
+    <!-- 试卷详情弹窗 -->
     <div class="modal-overlay" id="detailModal">
         <div class="modal">
             <h2>试卷详情</h2>
@@ -168,34 +243,93 @@
         </div>
     </div>
 
-    <script>
-        const API_BASE = '/api/paper';
+    <!-- 添加学生弹窗 -->
+    <div class="modal-overlay" id="addStudentModal">
+        <div class="modal">
+            <h2>添加学生</h2>
+            <div class="form-group">
+                <label>学生ID</label>
+                <input type="number" id="formStudentId" placeholder="请输入学生ID">
+            </div>
+            <div class="form-group">
+                <label>姓名</label>
+                <input type="text" id="formStudentName" placeholder="请输入学生姓名">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeModal('addStudentModal')">取消</button>
+                <button class="btn btn-primary" onclick="submitAddStudent()">确定</button>
+            </div>
+        </div>
+    </div>
 
-        // 页面加载时获取数据
+    <!-- 添加分数弹窗 -->
+    <div class="modal-overlay" id="addScoreModal">
+        <div class="modal">
+            <h2>添加题目分数</h2>
+            <div class="form-group">
+                <label>题目ID</label>
+                <input type="number" id="formQuestionId" placeholder="请输入题目ID">
+            </div>
+            <div class="form-group">
+                <label>题型</label>
+                <input type="text" id="formQuestionType" placeholder="如：选择题、填空题、简答题">
+            </div>
+            <div class="form-group">
+                <label>分数</label>
+                <input type="number" step="0.01" id="formQuestionScore" placeholder="请输入分数" value="0">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeModal('addScoreModal')">取消</button>
+                <button class="btn btn-primary" onclick="submitAddScore()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_PAPER = '/api/paper';
+        const API_STUDENT = '/api/student';
+        const API_TEST = '/api/test';
+
+        // ==================== Tab 切换 ====================
+        function switchTab(name) {
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                const tabs = ['paper', 'student', 'score'];
+                btn.classList.toggle('active', tabs[i] === name);
+            });
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + name).classList.add('active');
+
+            // 切到对应板块时加载数据
+            if (name === 'paper') loadPapers();
+            if (name === 'student') loadStudents();
+            if (name === 'score') loadScoreSelects();
+        }
+
+        // ==================== 试卷管理 ====================
         document.addEventListener('DOMContentLoaded', () => {
             loadPapers();
-            // 回车搜索
             document.getElementById('searchInput').addEventListener('keydown', e => {
                 if (e.key === 'Enter') searchPaper();
             });
+            document.getElementById('studentSearchInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter') searchStudent();
+            });
         });
 
-        // 加载所有试卷
         async function loadPapers() {
             try {
-                const res = await fetch(`${API_BASE}/list`);
+                const res = await fetch(`${API_PAPER}/list`);
                 const data = await res.json();
                 if (data.code === 200) {
-                    renderTable(data.data);
+                    renderPaperTable(data.data);
                     updateStats(data.data);
                 }
             } catch (e) {
-                showToast('加载失败，请检查后端服务', 'error');
+                showToast('加载试卷失败', 'error');
             }
         }
 
-        // 渲染表格
-        function renderTable(list) {
+        function renderPaperTable(list) {
             const tbody = document.getElementById('paperTable');
             const empty = document.getElementById('emptyState');
             if (!list || list.length === 0) {
@@ -222,48 +356,39 @@
             `).join('');
         }
 
-        // 更新统计
         function updateStats(list) {
             document.getElementById('totalCount').textContent = list.length;
             if (list.length > 0) {
-                const avgPerson = (list.reduce((s, p) => s + p.person, 0) / list.length).toFixed(1);
-                const avgScore = (list.reduce((s, p) => s + p.avg, 0) / list.length).toFixed(1);
-                document.getElementById('avgPerson').textContent = avgPerson;
-                document.getElementById('avgScore').textContent = avgScore;
+                document.getElementById('avgPerson').textContent = (list.reduce((s, p) => s + p.person, 0) / list.length).toFixed(1);
+                document.getElementById('avgScore').textContent = (list.reduce((s, p) => s + p.avg, 0) / list.length).toFixed(1);
             } else {
                 document.getElementById('avgPerson').textContent = '0';
                 document.getElementById('avgScore').textContent = '0';
             }
         }
 
-        // 搜索试卷
         async function searchPaper() {
             const keyword = document.getElementById('searchInput').value.trim();
-            if (!keyword) {
-                loadPapers();
-                return;
-            }
-            // 先尝试按ID查询
+            if (!keyword) { loadPapers(); return; }
             if (/^\d+$/.test(keyword)) {
                 try {
-                    const res = await fetch(`${API_BASE}/${keyword}`);
+                    const res = await fetch(`${API_PAPER}/${keyword}`);
                     const data = await res.json();
                     if (data.code === 200 && data.data) {
-                        renderTable([data.data]);
+                        renderPaperTable([data.data]);
                         updateStats([data.data]);
                         return;
                     }
                 } catch (e) {}
             }
-            // 按名称查询
             try {
-                const res = await fetch(`${API_BASE}/title/${encodeURIComponent(keyword)}`);
+                const res = await fetch(`${API_PAPER}/title/${encodeURIComponent(keyword)}`);
                 const data = await res.json();
                 if (data.code === 200 && data.data) {
-                    renderTable([data.data]);
+                    renderPaperTable([data.data]);
                     updateStats([data.data]);
                 } else {
-                    renderTable([]);
+                    renderPaperTable([]);
                     updateStats([]);
                 }
             } catch (e) {
@@ -271,10 +396,9 @@
             }
         }
 
-        // 查看详情
         async function viewDetail(paperid) {
             try {
-                const res = await fetch(`${API_BASE}/${paperid}`);
+                const res = await fetch(`${API_PAPER}/${paperid}`);
                 const data = await res.json();
                 if (data.code === 200 && data.data) {
                     const p = data.data;
@@ -297,7 +421,6 @@
             }
         }
 
-        // 打开添加弹窗
         function openAddModal() {
             document.getElementById('formPaperid').value = '';
             document.getElementById('formPapertitle').value = '';
@@ -308,7 +431,6 @@
             openModal('addModal');
         }
 
-        // 提交添加
         async function submitAdd() {
             const paperid = document.getElementById('formPaperid').value;
             const papertitle = document.getElementById('formPapertitle').value.trim();
@@ -316,14 +438,12 @@
             const person = document.getElementById('formPerson').value;
             const total = document.getElementById('formTotal').value;
             const avg = document.getElementById('formAvg').value;
-
             if (!paperid || !papertitle) {
                 showToast('试卷ID和名称不能为空', 'error');
                 return;
             }
-
             try {
-                const res = await fetch(API_BASE, {
+                const res = await fetch(API_PAPER, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -348,11 +468,10 @@
             }
         }
 
-        // 删除试卷
         async function deletePaper(paperid) {
             if (!confirm(`确定要删除试卷ID=${paperid}吗？`)) return;
             try {
-                const res = await fetch(`${API_BASE}/${paperid}`, { method: 'DELETE' });
+                const res = await fetch(`${API_PAPER}/${paperid}`, { method: 'DELETE' });
                 const data = await res.json();
                 if (data.code === 200) {
                     showToast('删除成功', 'success');
@@ -365,18 +484,263 @@
             }
         }
 
-        // 弹窗控制
+        // ==================== 学生管理 ====================
+        let allStudents = [];
+
+        async function loadStudents() {
+            try {
+                const res = await fetch(`${API_STUDENT}/list`);
+                const data = await res.json();
+                if (data.code === 200) {
+                    allStudents = data.data || [];
+                    renderStudentTable(allStudents);
+                }
+            } catch (e) {
+                showToast('加载学生失败', 'error');
+            }
+        }
+
+        function renderStudentTable(list) {
+            const tbody = document.getElementById('studentTable');
+            const empty = document.getElementById('studentEmptyState');
+            if (!list || list.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            tbody.innerHTML = list.map(s => `
+                <tr>
+                    <td>${s.studentId}</td>
+                    <td>${s.studentName}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.studentId})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchStudent() {
+            const keyword = document.getElementById('studentSearchInput').value.trim().toLowerCase();
+            if (!keyword) {
+                renderStudentTable(allStudents);
+                return;
+            }
+            const filtered = allStudents.filter(s =>
+                String(s.studentId).includes(keyword) ||
+                s.studentName.toLowerCase().includes(keyword)
+            );
+            renderStudentTable(filtered);
+        }
+
+        function openAddStudentModal() {
+            document.getElementById('formStudentId').value = '';
+            document.getElementById('formStudentName').value = '';
+            openModal('addStudentModal');
+        }
+
+        async function submitAddStudent() {
+            const studentId = document.getElementById('formStudentId').value;
+            const studentName = document.getElementById('formStudentName').value.trim();
+            if (!studentId || !studentName) {
+                showToast('学生ID和姓名不能为空', 'error');
+                return;
+            }
+            try {
+                const res = await fetch(API_STUDENT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentId: parseInt(studentId),
+                        studentName: studentName
+                    })
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('添加成功', 'success');
+                    closeModal('addStudentModal');
+                    loadStudents();
+                } else {
+                    showToast(data.msg || '添加失败', 'error');
+                }
+            } catch (e) {
+                showToast('添加失败，请检查网络', 'error');
+            }
+        }
+
+        async function deleteStudent(studentId) {
+            if (!confirm(`确定要删除学生ID=${studentId}吗？`)) return;
+            try {
+                const res = await fetch(`${API_STUDENT}/${studentId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('删除成功', 'success');
+                    loadStudents();
+                } else {
+                    showToast(data.msg || '删除失败', 'error');
+                }
+            } catch (e) {
+                showToast('删除失败', 'error');
+            }
+        }
+
+        // ==================== 录入分数 ====================
+        async function loadScoreSelects() {
+            try {
+                const [paperRes, studentRes] = await Promise.all([
+                    fetch(`${API_PAPER}/list`),
+                    fetch(`${API_STUDENT}/list`)
+                ]);
+                const paperData = await paperRes.json();
+                const studentData = await studentRes.json();
+
+                const paperSelect = document.getElementById('scorePaperSelect');
+                const studentSelect = document.getElementById('scoreStudentSelect');
+
+                // 保留当前选中值
+                const curPaper = paperSelect.value;
+                const curStudent = studentSelect.value;
+
+                paperSelect.innerHTML = '<option value="">-- 请选择试卷 --</option>';
+                if (paperData.code === 200 && paperData.data) {
+                    paperData.data.forEach(p => {
+                        paperSelect.innerHTML += `<option value="${p.paperid}">${p.paperid} - ${p.papertitle}</option>`;
+                    });
+                }
+                paperSelect.value = curPaper;
+
+                studentSelect.innerHTML = '<option value="">-- 请选择学生 --</option>';
+                if (studentData.code === 200 && studentData.data) {
+                    studentData.data.forEach(s => {
+                        studentSelect.innerHTML += `<option value="${s.studentId}">${s.studentId} - ${s.studentName}</option>`;
+                    });
+                }
+                studentSelect.value = curStudent;
+            } catch (e) {
+                showToast('加载选项失败', 'error');
+            }
+        }
+
+        async function onScoreSelectChange() {
+            const paperId = document.getElementById('scorePaperSelect').value;
+            const studentId = document.getElementById('scoreStudentSelect').value;
+            if (!paperId || !studentId) {
+                document.getElementById('scoreTable').innerHTML = '';
+                document.getElementById('scoreEmptyState').style.display = 'block';
+                document.getElementById('scoreEmptyState').querySelector('p').textContent = '请先选择试卷和学生';
+                return;
+            }
+            await loadScores(paperId, studentId);
+        }
+
+        async function loadScores(paperId, studentId) {
+            try {
+                const res = await fetch(`${API_TEST}/${paperId}/student/${studentId}`);
+                const data = await res.json();
+                const tbody = document.getElementById('scoreTable');
+                const empty = document.getElementById('scoreEmptyState');
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    empty.style.display = 'none';
+                    tbody.innerHTML = data.data.map(s => `
+                        <tr>
+                            <td>${s.question_id}</td>
+                            <td>${s.type || '-'}</td>
+                            <td>${s.question_score}</td>
+                            <td>
+                                <div class="actions">
+                                    <button class="btn btn-danger btn-sm" onclick="deleteScore(${s.paperid}, ${s.question_id}, ${s.studentId})">删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '';
+                    empty.style.display = 'block';
+                    empty.querySelector('p').textContent = '暂无分数数据，点击"添加题目分数"录入';
+                }
+            } catch (e) {
+                showToast('加载分数失败', 'error');
+            }
+        }
+
+        function openAddScoreModal() {
+            const paperId = document.getElementById('scorePaperSelect').value;
+            const studentId = document.getElementById('scoreStudentSelect').value;
+            if (!paperId || !studentId) {
+                showToast('请先选择试卷和学生', 'error');
+                return;
+            }
+            document.getElementById('formQuestionId').value = '';
+            document.getElementById('formQuestionType').value = '';
+            document.getElementById('formQuestionScore').value = '0';
+            openModal('addScoreModal');
+        }
+
+        async function submitAddScore() {
+            const paperId = document.getElementById('scorePaperSelect').value;
+            const studentId = document.getElementById('scoreStudentSelect').value;
+            const questionId = document.getElementById('formQuestionId').value;
+            const type = document.getElementById('formQuestionType').value.trim();
+            const questionScore = document.getElementById('formQuestionScore').value;
+
+            if (!questionId) {
+                showToast('题目ID不能为空', 'error');
+                return;
+            }
+            try {
+                const res = await fetch(API_TEST, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question_id: parseInt(questionId),
+                        paperid: parseInt(paperId),
+                        studentId: parseInt(studentId),
+                        type: type,
+                        question_score: parseFloat(questionScore)
+                    })
+                });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('添加成功', 'success');
+                    closeModal('addScoreModal');
+                    loadScores(paperId, studentId);
+                } else {
+                    showToast(data.msg || '添加失败', 'error');
+                }
+            } catch (e) {
+                showToast('添加失败，请检查网络', 'error');
+            }
+        }
+
+        async function deleteScore(paperId, questionId, studentId) {
+            if (!confirm(`确定要删除该题目分数吗？`)) return;
+            try {
+                const res = await fetch(`${API_TEST}/${paperId}/${questionId}/${studentId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.code === 200) {
+                    showToast('删除成功', 'success');
+                    loadScores(paperId, studentId);
+                } else {
+                    showToast(data.msg || '删除失败', 'error');
+                }
+            } catch (e) {
+                showToast('删除失败', 'error');
+            }
+        }
+
+        // ==================== 弹窗控制 ====================
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // 点击遮罩关闭弹窗
         document.querySelectorAll('.modal-overlay').forEach(el => {
             el.addEventListener('click', e => {
                 if (e.target === el) el.classList.remove('active');
             });
         });
 
-        // 消息提示
+        // ==================== 消息提示 ====================
         function showToast(msg, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;

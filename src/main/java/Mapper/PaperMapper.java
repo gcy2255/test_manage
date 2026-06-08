@@ -21,7 +21,7 @@ public interface PaperMapper {
 
     // 添加试卷
     @Insert(
-            "insert into paper(paperid,papertitle,paperdate,person,avg,total) values(#{paperid},#{papertitle},#{paperdate},#{person},#{avg},#{total})"
+            "insert into paper(paperid,papertitle,paperdate,person,avg,total,count) values(#{paperid},#{papertitle},#{paperdate},#{person},#{avg},#{total},#{count})"
     )
     int addPaper(paper paper);
 
