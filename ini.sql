@@ -24,8 +24,7 @@ CREATE TABLE paper (
     paperdate   DATE COMMENT '考试日期',
     person      INT DEFAULT 0 COMMENT '参加考试人数',
     avg         DOUBLE DEFAULT 0 COMMENT '平均分',
-    total       DOUBLE DEFAULT 0 COMMENT '总分',
-    count       INT DEFAULT 0 COMMENT '题目数量'
+    total       DOUBLE DEFAULT 0 COMMENT '总分'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='试卷表';
 
 -- ============================================

@@ -12,7 +12,7 @@ public class BackendApplication {
         SpringApplication.run(BackendApplication.class, args);
         System.out.println("启动成功");
         System.out.println("--------------------------------");
-        System.out.println("访问 http://localhost:8080");
+        System.out.println("访问 http://localhost:9091");
 
 
 
