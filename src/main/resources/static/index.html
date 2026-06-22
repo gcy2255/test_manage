@@ -676,6 +676,7 @@
                     showToast('添加成功', 'success');
                     closeModal('addScoreModal');
                     loadScores(paperId, studentId);
+                    updatePaperAvg(paperId);
                 } else {
                     showToast(data.msg || '添加失败', 'error');
                 }
@@ -692,11 +693,21 @@
                 if (data.code === 200) {
                     showToast('删除成功', 'success');
                     loadScores(paperId, studentId);
+                    updatePaperAvg(paperId);
                 } else {
                     showToast(data.msg || '删除失败', 'error');
                 }
             } catch (e) {
                 showToast('删除失败', 'error');
+            }
+        }
+
+        // 更新试卷平均分
+        async function updatePaperAvg(paperId) {
+            try {
+                await fetch(`${API_PAPER}/avg/${paperId}`, { method: 'PUT' });
+            } catch (e) {
+                console.error('更新平均分失败', e);
             }
         }
 

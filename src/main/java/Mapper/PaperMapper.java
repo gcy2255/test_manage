@@ -74,6 +74,14 @@ public interface PaperMapper {
     )
     int getPerson(int paperid);
 
+    // 查询某张试卷所有学生的总分（从test表计算）
+    @Select("select COALESCE(SUM(question_score), 0) from test where paperid=#{paperid}")
+    double getTotalScoreByPaper(int paperid);
+
+    // 查询某张试卷的学生人数（去重统计）
+    @Select("select COUNT(DISTINCT student_id) from test where paperid=#{paperid}")
+    int getStudentCountByPaper(int paperid);
+
     // 查询所有试卷
     @Select("select * from paper")
     List<paper> queryAll();

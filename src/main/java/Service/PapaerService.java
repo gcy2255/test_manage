@@ -46,10 +46,16 @@ public class PapaerService {
 
     // 计算试卷的平均成绩并且更新试卷的平均成绩
     public int updateAvg(int paperid) {
-        paper paper = paperMapper.queryPaperById(paperid);
+        // 从test表查询实际的总分和学生人数
+        double totalScore = paperMapper.getTotalScoreByPaper(paperid);
+        int studentCount = paperMapper.getStudentCountByPaper(paperid);
+
+        // 计算平均分
         double avg = 0.0;
-        double total = paperMapper.getTotal(paperid);
-        avg = total / paperMapper.getPerson(paperid);
+        if (studentCount > 0) {
+            avg = totalScore / studentCount;
+        }
+
         // 更新试卷的平均成绩
         return paperMapper.updateAvg(paperid, avg);
     }

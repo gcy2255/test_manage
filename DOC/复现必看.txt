@@ -1,9 +1,0 @@
-复现的环境配置：
-	jdk17+
-	mysql8.0+
-	maven3
-项目采用idea编写推荐使用idea打开项目
-数据库环境：
-	用户：testmanage
-	密码：123456
-GitHub地址：
