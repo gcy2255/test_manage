@@ -5,8 +5,8 @@ spring:
   application:
     name: backend
   datasource:
-    url: jdbc:mysql://localhost:3306/papertest
-    username: root
+    url: jdbc:mysql://localhost:3306/testmanage
+    username: testmanage
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
