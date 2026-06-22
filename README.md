@@ -1,0 +1,12 @@
+# 复现的环境配置：
+	- jdk17+
+	- mysql8.0+
+	- maven3
+# 项目采用idea编写推荐使用idea打开项目
+# 在项目开始前需要对文件夹中testmanage.sql进行对数据库结构化
+# 创建用户sql在文件夹用户.sql文件
+# 数据库环境：
+	## 用户：testmanage
+	## 密码：123456
+	## 端口：3306
+# GitHub地址：https://github.com/gcy2255/test_manage
